@@ -1,250 +1,47 @@
-Code Book Wearable Computing
 
-subjectnumber 
-	Field width = 1
-	Definition: Number assigned to study subject
-	Range = 1-30
+TidyScript <- function() {
+  X_test <- read.table(file.path("UCI HAR Dataset", "test", "X_test.txt"))
+  subject_test <- read.table(file.path("UCI HAR Dataset", "test", "subject_test.txt"))
+  Y_test <- read.table(file.path("UCI HAR Dataset", "test", "y_test.txt"))
+  X_train <- read.table(file.path("UCI HAR Dataset", "train", "X_train.txt"))
+  y_train <- read.table(file.path("UCI HAR Dataset", "train", "y_train.txt"))
+  subject_train <- read.table(file.path("UCI HAR Dataset", "train", "subject_train.txt"))
+  activity_labels <- read.table(file.path("UCI HAR Dataset", "activity_labels.txt"))
+  features <- read.table(file.path("UCI HAR Dataset", "features.txt"))
+  MergedData <- rbind(X_train, X_test)
+  colnames(MergedData) <- features[ ,2]
+  mergedSubjects <- rbind(subject_train, subject_test)
+  
+  meanNames <- grep("mean()", colnames(MergedData))
+  stdNames <- grep("std()", colnames(MergedData))
+  MeanAndStd <- MergedData[,c(meanNames, stdNames)]
+  ActivityNames <- rbind(y_train, Y_test)
+  ActivityNames <- replace(ActivityNames, ActivityNames == 1, "WALKING")
+  ActivityNames <- replace(ActivityNames, ActivityNames == 2, "WALKING_UPSTAIRS")
+  ActivityNames <- replace(ActivityNames, ActivityNames == 3, "WALKING_DOWNSTAIRS")
+  
+  ActivityNames <- replace(ActivityNames, ActivityNames == 4, "SITTING")
+  ActivityNames <- replace(ActivityNames, ActivityNames == 5, "STANDING")
+  ActivityNames <- replace(ActivityNames, ActivityNames == 6, "LYING")
+  LabeledMergedData <- cbind(ActivityNames, MeanAndStd)
+  TidyData <- cbind(mergedSubjects, LabeledMergedData)
+  ColumnNames <- colnames(TidyData)
+  ColumnNames[1] <- "SubjectNumber"
+  ColumnNames[2] <- "ActivityName"
+  
+  ColumnNames <- gsub("-", "", ColumnNames)
+  ColumnNames <- gsub("\\(", "", ColumnNames)
+  ColumnNames <- gsub("\\)", "", ColumnNames)
+  ColumnNames <- tolower(ColumnNames)
+  colnames(TidyData) <- ColumnNames
+  stdcolnames <- grep("std", colnames(TidyData))
+  meanTidyData <- TidyData[,c(1:48)]
+  
+  FinalTidyData <- ddply(meanTidyData, c("subjectnumber", "activityname"), function(df) c(colMeans(df[c(3:48)])))
+  write.table(FinalTidyData, file = "TidyData.txt", row.name = FALSE)
+  
+}
+TidyScript()
 
-activityname 
-	Field Width = 18
-	Definition: Activity subject performed while measurements were taken
-	Range:
-		LYING
-		SITTING
-		STANDING
-		WALKING
-		WALKING_DOWNSTAIRS
-		WALKING_UPSTAIRS
 
-NOTE: For variables tbodyaccmeanx through fbodybodygyrojerkmagmeanfreq:
-		Measured and calculated values have been normalized to a range of -1 to 1. No units were given in the original data set.
 
-tbodyaccmeanx
-	Field Width = 16
-	Definition: Body acceleration mean in x axis
-	Range: -1 to 1
-
-tbodyaccmeany
-	Field Width = 16
-	Definition: Body acceleration mean in y axis
-	Range: -1 to 1
-
-tbodyaccmeanz
-	Field Width = 16
-	Definition: Body acceleration mean in z axis
-	Range: -1 to 1
-
-tgravityaccmeanx 
-	Field Width = 16
-	Definition: Body gravitational acceleration in x axis
-	Range: -1 to 1
-
-tgravityaccmeany
-	Field Width = 16
-	Definition: Body gravitational acceleration in y axis
-	Range: -1 to 1
-
-tgravityaccmeanz
-	Field Width = 16
-	Definition: Body gravitational acceleration in z axis
-	Range: -1 to 1
-
-tbodyaccjerkmeanx
-	Field Width = 16
-	Definition: Body jerk acceleration in x axis
-	Range: -1 to 1
-
-tbodyaccjerkmeany
-	Field Width = 16
-	Definition: Body jerk acceleration in y axis
-	Range: -1 to 1
-
-tbodyaccjerkmeanz
-	Field Width = 16
-	Definition: Body jerk acceleration in z axis
-	Range: -1 to 1
-
-tbodygyromeanx
-	Field Width = 16
-	Definition: Body angular acceleration in x axis
-	Range: -1 to 1
-
-tbodygyromeany 
-	Field Width = 16
-	Definition: Body angular acceleration in y axis
-	Range: -1 to 1
-
-tbodygyromeanz
-	Field Width = 16
-	Definition: Body angular acceleration in z axis
-	Range: -1 to 1
-
-tbodygyrojerkmeanx
-	Field Width = 16
-	Definition: Body angular jerk acceleration in x axis
-	Range: -1 to 1
-
-tbodygyrojerkmeany
-	Field Width = 16
-	Definition: Body angular jerk acceleration in y axis
-	Range: -1 to 1
-
-tbodygyrojerkmeanz
-	Field Width = 16
-	Definition: Body angular jerk acceleration in z axis
-	Range: -1 to 1
-
-tbodyaccmagmean
-	Field Width = 16
-	Definition: Body acceleration mean magnitude 
-	Range: -1 to 1
-
-tgravityaccmagmean
-	Field Width = 16
-	Definition: Gravitational acceleration mean magnitude 
-	Range: -1 to 1
-
-tbodyaccjerkmagmean
-	Field Width = 16
-	Definition: Body acceleration jerk mean magnitude 
-	Range: -1 to 1
-
-tbodygyromagmean
-	Field Width = 16
-	Definition: Body angular acceleration mean magnitude 
-	Range: -1 to 1
-
-tbodygyrojerkmagmean
-	Field Width = 16
-	Definition: Body angular acceleration jerk mean magnitude 
-	Range: -1 to 1
-
-fbodyaccmeanx
-	Field Width = 16
-	Definition: Fast Fourier Transform body acceleration mean x axis 
-	Range: -1 to 1
-
-fbodyaccmeany
-	Field Width = 16
-	Definition: Fast Fourier Transform body acceleration mean y axis 
-	Range: -1 to 1
-
-fbodyaccmeanz
-	Field Width = 16
-	Definition: Fast Fourier Transform body acceleration mean z axis 
-	Range: -1 to 1
-
-fbodyaccmeanfreqx
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration frequency x axis 
-	Range: -1 to 1
-
-fbodyaccmeanfreqy
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration frequency y axis 
-	Range: -1 to 1
-
-fbodyaccmeanfreqz
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration frequency z axis 
-	Range: -1 to 1
-
-fbodyaccjerkmeanx
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration jerk x axis
-	Range: -1 to 1
-
-fbodyaccjerkmeany
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration jerk y axis
-	Range: -1 to 1
-
-fbodyaccjerkmeanz
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration jerk z axis
-	Range: -1 to 1
-
-fbodyaccjerkmeanfreqx
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration jerk frequency x axis
-	Range: -1 to 1
-
-fbodyaccjerkmeanfreqy
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration jerk frequency y axis
-	Range: -1 to 1
-
-fbodyaccjerkmeanfreqz
-	Field Width = 16
-	Definition: Fast Fourier Transform mean acceleration jerk frequency z axis
-	Range: -1 to 1
-
-fbodygyromeanx
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration x axis
-	Range: -1 to 1
-
-fbodygyromeany
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration y axis
-	Range: -1 to 1
-
-fbodygyromeanz
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration z axis
-	Range: -1 to 1
-
-fbodygyromeanfreqx 
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration frequency x axis
-	Range: -1 to 1
-
-fbodygyromeanfreqy
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration frequency y axis
-	Range: -1 to 1
-
-fbodygyromeanfreqz
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration frequency z axis
-	Range: -1 to 1
-
-fbodyaccmagmean
-	Field Width = 16
-	Definition: Fast Fourier Transform mean body acceleration magnitude
-	Range: -1 to 1
-
-fbodyaccmagmeanfreq
-	Field Width = 16
-	Definition: Fast Fourier Transform mean body acceleration magnitude frequency
-	Range: -1 to 1
-
-fbodybodyaccjerkmagmean
-	Field Width = 16
-	Definition: Fast Fourier Transform mean body acceleration jerk magnitude 
-	Range: -1 to 1
-
-fbodybodyaccjerkmagmeanfreq
-	Field Width = 16
-	Definition: Fast Fourier Transform mean body acceleration jerk magnitude frequency
-	Range: -1 to 1
-
-fbodybodygyromagmean
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration magnitude 
-	Range: -1 to 1
-
-fbodybodygyromagmeanfreq
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration magnitude frequency
-	Range: -1 to 1
-
-fbodybodygyrojerkmagmean
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration jerk magnitude 
-	Range: -1 to 1
-
-fbodybodygyrojerkmagmeanfreq
-	Field Width = 16
-	Definition: Fast Fourier Transform mean angular acceleration magnitude frequency
-	Range: -1 to 1
